@@ -12,7 +12,6 @@ import pandas as pd
 from matplotlib.colors import TwoSlopeNorm
 import matplotlib.patheffects as pe
 import matplotlib.patches as patches
-import textwrap
 
 # --- 폰트 설정 ---
 import matplotlib
@@ -78,8 +77,8 @@ def plot_sst(da, date):
     cbar = fig.colorbar(im, ax=ax, orientation="vertical", pad=0.05)
     cbar.set_label("해수면 온도 (℃)")
     ax.set_title(f"해수면 온도: {date.strftime('%Y-%m-%d')}")
-    return fig
     ax.add_feature(cfeature.BORDERS, linewidth=0.5)
+    return fig
 
 # --- 유틸 함수 (Bullet, Lollipop, Combo, Waffle) ---
 def bullet(ax, value, target, label="", color="#F28E2B"):
