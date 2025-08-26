@@ -278,5 +278,13 @@ st.markdown("""
 - Newstree, YTN Science 외 기사 및 연구논문  
 """)
 
-# --- 푸터 추가 ---
-st.footer("미림마이스터고등학교 1학년 4반 1조 지속가능한지구사랑해조")
+st.markdown(
+    """
+    <div style='text-align: center; padding: 20px; color: gray; font-size: 0.9em;'>
+        미림마이스터고등학교 1학년 4반 5조 · 지속가능한지구사랑해조
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+
