@@ -12,6 +12,7 @@ import pandas as pd
 from matplotlib.colors import TwoSlopeNorm
 import matplotlib.patheffects as pe
 import matplotlib.patches as patches
+import textwrap
 
 # --- 폰트 설정 ---
 import matplotlib
@@ -78,6 +79,7 @@ def plot_sst(da, date):
     cbar.set_label("해수면 온도 (℃)")
     ax.set_title(f"해수면 온도: {date.strftime('%Y-%m-%d')}")
     return fig
+    ax.add_feature(cfeature.BORDERS, linewidth=0.5)
 
 # --- 유틸 함수 (Bullet, Lollipop, Combo, Waffle) ---
 def bullet(ax, value, target, label="", color="#F28E2B"):
@@ -132,18 +134,18 @@ def waffle(ax, percent, rows=10, cols=10, on="#F03B20", off="#EEEEEE", title=Non
             fontsize=20, weight="bold", color="#333", path_effects=PE)
 
 # --- 보고서 본문 ---
-st.title("🌊 해수면 온도 상승은 고등학생에게 어떠한 영향을 미치는가?")
+st.title("🌊 뜨거워지는 지구: 해수면 온도 상승이 고등학생에게 미치는 영향")
 
 st.header("I. 서론: 뜨거워지는 바다, 위협받는 교실")
 st.markdown("""
 한반도는 지구 평균보다 2~3배 빠른 해수면 온도 상승을 겪고 있으며, 이는 더 이상 추상적인 환경 문제가 아니라 
 미래 세대의 학습권과 건강을 직접적으로 위협하는 현실입니다. 본 보고서는 고등학생을 기후 위기의 가장 취약한 집단이자 
-변화의 핵심 동력으로 조명하며, SST 상승의 실태와 파급효과를 다각도로 분석합니다.
+변화의 핵심 동력으로 조명하며, 해수면 온도(Sea Surface Temperature, SST) 상승의 실태와 파급효과를 다각도로 분석합니다.
 """)
 
 st.header("II. 조사 계획")
 st.subheader("1) 조사 기간")
-st.markdown("2025년 1월 ~ 2025년 8월")
+st.markdown("2025년 7월 ~ 2025년 8월")
 st.subheader("2) 조사 방법과 대상")
 st.markdown("""
 - **데이터 분석**: NOAA OISST v2 High Resolution Dataset
@@ -155,15 +157,15 @@ st.markdown("""
 st.header("III. 조사 결과")
 
 # NOAA 지도
-st.subheader("1) NOAA OISST Dataset 시각화")
+st.subheader("1) 한반도 주변 해수면 온도 상승 실태")
 date = st.date_input("날짜 선택", value=datetime.date.today()-datetime.timedelta(days=2))
 with st.spinner("데이터 불러오는 중..."):
     da = load_sst(date)
 if da is not None:
     st.pyplot(plot_sst(da, date), clear_figure=True)
 
-# 1번 데이터 (Bullet)
-st.subheader("📈 최근 기록과 평년 대비 편차 — Bullet Charts")
+# Bullet Charts
+st.subheader("📈 최근 기록과 평년 대비 편차")
 c1, c2, c3 = st.columns(3)
 with c1:
     fig, ax = plt.subplots(figsize=(5,2.6))
@@ -181,8 +183,8 @@ with c3:
     st.pyplot(fig, clear_figure=True)
     st.caption("➡️ 서해는 평년 대비 +2.8℃ 상승, 단기간 급격히 뜨거워짐.")
 
-# 2번 데이터 (Lollipop)
-st.subheader("📊 해역별 장·단기 상승과 편차 — Lollipop Charts")
+# Lollipop Charts
+st.subheader("📊 해역별 장·단기 상승과 편차")
 regions = ["동해", "서해", "남해"]
 rise_1968_2008 = [1.39, 1.23, 1.27]
 rate_since_2010 = [0.36, 0.54, 0.38]
@@ -204,8 +206,86 @@ with cL3:
     st.pyplot(fig, clear_figure=True)
     st.caption("➡️ 2024년 동해는 평년 대비 +3.4℃ 치솟음.")
 
-# 3번 데이터 (온열질환)
-st.subheader("🧑‍⚕️ 온열질환 연도별 현황 — Bars + Line")
+st.subheader("2) 지구에 미치는 영향: 극단적 기상 현상의 심화")
+st.markdown("""
+해수면 온도 상승은 단순히 바다만 뜨거워지는 현상에 그치지 않고, 대기와 상호작용하며 지구 전체의 기상 시스템을 교란합니다.
+- **더 강력한 태풍**: 따뜻한 바다는 태풍에 더 많은 에너지(잠열)를 공급하여, 과거보다 훨씬 강력한 '슈퍼 태풍'으로 발달할 가능성을 높입니다.
+- **집중호우 빈발**: 기온이 1℃ 오르면 대기가 머금을 수 있는 수증기량은 약 7% 증가합니다. 이는 예측 불가능한 '물폭탄' 형태의 국지성 폭우로 이어져 홍수 위험을 키웁니다.
+- **혹독한 폭염**: 바다가 데워지면 대기 역시 뜨거워져 '열돔(Heat Dome)' 현상이 발생하기 쉽습니다. 이는 한 지역에 폭염이 장기간 지속되는 결과로 나타납니다.
+""")
+# 데이터 준비
+temps2 = np.arange(0, 6)  # 0~5℃
+humidity_increase = 7 * temps2  # 1℃당 7% 증가 (선형近似)
+
+figH2, axH2 = plt.subplots(figsize=(7,4))
+
+# 곡선 라인
+axH2.plot(temps2, humidity_increase, color="#2E86AB", lw=3, marker="o")
+
+# 곡선 아래 채우기 (gradient-like 효과)
+axH2.fill_between(temps2, humidity_increase, color="#2E86AB", alpha=0.2)
+
+# 축 설정
+axH2.set_xlabel("기온 상승 (℃)")
+axH2.set_ylabel("대기 수증기량 증가율 (%)")
+axH2.set_title("기온 상승에 따른 대기 수증기량 증가")
+
+# 주요 포인트 강조
+highlight_points = {1: 7, 2: 14, 3: 21, 4: 28, 5: 35}
+for t, v in highlight_points.items():
+    axH2.scatter(t, v, color="red", zorder=5)
+    axH2.annotate(f"+{v:.0f}%", (t, v),
+                  textcoords="offset points", xytext=(0,10),
+                  ha="center", color="red", weight="bold")
+
+st.pyplot(figH2, clear_figure=True)
+
+st.caption("➡️ 기온이 1℃ 오를 때마다 약 7%씩 대기 수증기량이 늘어나 집중호우 가능성이 커집니다.")
+
+st.subheader("3) 고등학생에게 미치는 영향")
+st.markdown("이러한 지구 환경의 변화는 고등학생들의 학습 환경과 신체적, 정신적 건강에 직접적인 영향을 미칩니다.")
+
+st.markdown("##### 학업 성취도 저하")
+st.markdown("""
+- **폭염과 학습 효율**: 폭염은 교실의 온도를 높여 학생들의 집중력을 심각하게 저하시킵니다.<br>
+  **전미경제연구소(NBER)의 'Heat and Learning' 연구**에 따르면, 교내 냉방 시설이 없는 환경에서  
+  **기온이 섭씨 1°C 상승할 때마다 학생들의 학업 성취도는 약 1.8%씩 감소**했습니다.
+- **학습 결손 및 교육 불평등**: 강력해진 태풍과 집중호우로 인한 잦은 휴교는 학습 결손으로 이어집니다.<br>
+  또한, 냉방 시설이 잘 갖춰진 학교와 그렇지 않은 학교 간의 학습 환경 차이는  
+  <strong>기후 성취 격차(Climate Achievement Gap)</strong>를 유발하여 교육 불평등을 심화시킬 수 있습니다.
+""", unsafe_allow_html=True)
+
+
+# --- 📉 기온 상승 → 학업 성취도 감소 (시각화) ---
+temps = np.arange(0, 6)  # 0~5℃
+impact = 100 - (1.8 * temps)  # 100% 기준 → °C당 감소 반영
+
+figC, axC = plt.subplots(figsize=(7,4))
+
+# 막대 그래프
+axC.bar(temps, impact, color="#FDB863", alpha=0.7, label="구간별 학업 성취도")
+
+# 선 그래프 (추세선)
+axC.plot(temps, impact, marker="o", color="#C1272D", lw=2.5, label="추세선 (1℃ 당 -1.8%)")
+
+# 축/제목
+axC.set_xlabel("기온 상승 (℃)")
+axC.set_ylabel("학업 성취도 (%)")
+axC.set_title("기온 상승이 학업 성취도에 미치는 영향")
+axC.set_ylim(80, 102)
+
+# 데이터 라벨
+for t, v in zip(temps, impact):
+    axC.text(t, v+0.5, f"{v:.1f}%", ha="center", va="bottom", fontsize=9)
+
+axC.legend()
+st.pyplot(figC, clear_figure=True)
+
+st.caption("➡️ 기온이 1℃ 오를 때마다 학생들의 학업 성취도는 약 1.8%씩 감소합니다.")
+
+
+st.markdown("##### 신체 및 정신 건강 위협")
+# 온열질환 차트
 years = ["2022년", "2023년", "2024년"]
 patients = [1564, 2818, 3704]
 deaths = [9, 32, 34]
@@ -213,52 +293,29 @@ figM, axM = plt.subplots(figsize=(8, 3.6))
 combo_bar_line(axM, years, patients, deaths)
 axM.set_title("온열질환 환자·사망 추이")
 st.pyplot(figM, clear_figure=True)
-st.caption("➡️ 환자 수는 3년간 급격히 증가, 사망자도 꾸준히 발생.")
+st.caption("➡️ 폭염의 일상화로 온열질환자가 급증하고 있습니다.")
 
-# 4번 데이터 (기후우울)
-st.subheader("🧠 청소년 기후불안 — Waffle Charts")
+# 기후우울 차트
 cwa, cwb = st.columns(2)
 with cwa:
     figW1, axW1 = plt.subplots(figsize=(4.2, 4.2))
-    waffle(axW1, 59, title="매우/극도로 우려(%)")
+    waffle(axW1, 59, title="기후변화를 매우/극도로 우려")
     st.pyplot(figW1, clear_figure=True)
 with cwb:
     figW2, axW2 = plt.subplots(figsize=(4.2, 4.2))
-    waffle(axW2, 45, title="일상에 부정적 영향(%)")
+    waffle(axW2, 45, title="일상에 부정적 영향을 받음")
     st.pyplot(figW2, clear_figure=True)
-st.caption("➡️ 전 세계 16–25세 중 59%는 기후변화를 극도로 우려, 45%는 일상에 부정적 영향 보고.")
 
-# --- 추가된 내용 ---
-st.subheader("2) 기후 위기의 전조: 극단적 기상 현상의 일상화")
 st.markdown("""
-- **더 강력한 태풍**: 따뜻한 바다의 잠열 공급 → 태풍 세력 강화  
-- **집중호우 빈발**: 기온 1℃ 상승 → 대기 수증기 7% 증가 → '물폭탄' 국지성 폭우  
-- **혹독한 폭염**: 해양 열돔(Heat Dome) 현상 → 학업 집중력 저하, 건강 위협
+- **신체 건강**: 폭염으로 인한 온열질환의 위험이 커지고, 대기오염 물질이 정체되면서 천식이나 알레르기 같은 호흡기 질환이 악화될 수 있습니다.
+- **정신 건강**: 기후 위기의 심각성을 인지하는 청소년들은 미래에 대한 불안감, 무력감, 분노 등을 느끼며 '기후 우울(Climate Anxiety)'을 겪습니다. **의학 저널 '랜싯'의 연구**에 따르면, 전 세계 **16-25세 청소년의 45%가 기후 변화에 대한 걱정으로 일상생활(학업, 수면, 여가 등)에 부정적인 영향을 받는다**고 답했으며, **59%는 기후 변화를 '매우 또는 극도로' 우려**하는 것으로 나타났습니다.
 """)
 
-st.subheader("3) 청소년 건강 영향")
+st.subheader("4) 대응과 미래 세대를 위한 제언")
 st.markdown("""
-- **신체 건강**: 온열질환자 2024년 3,704명 (전년 대비 급증), 미세먼지 증가 → 천식·알레르기 악화  
-- **정신 건강**: 전 세계 청소년 59% 기후변화 극도 우려, '기후 우울' 확산 → 집중력·학업 동기 저하
-""")
-
-st.subheader("4) 학업과 학교생활 영향")
-st.markdown("""
-- 폭염 시 시험 점수 **1℃ 상승당 1% 감소** - 태풍·집중호우로 인한 **휴교 증가 → 학습 결손** - 냉방·환기 시설 격차로 인한 **기후 성취 격차(Climate Achievement Gap)**
-""")
-
-st.subheader("5) 생활환경과 사회경제적 파장")
-st.markdown("""
-- 어종 변화: 명태·도루묵 ↓, 오징어·멸치 ↑, 아열대 어종 등장  
-- 식품 가격 변동 → 저소득층 가계 부담 증가, 학교 급식 질 악화  
-- 식문화 단절 → 세대 간 경험 단절, 청소년 불안 심화
-""")
-
-st.subheader("6) 대응과 미래 세대를 위한 제언")
-st.markdown("""
-- **정책**: 학교 냉방·환기 시스템 현대화, 청소년 건강 통계 세분화  
-- **교육**: 기후변화 과목 신설, 프로젝트 기반 학습, '기후테크' 진로 지도  
-- **청소년 행동**: 플라스틱 저감 캠페인, 기후행동 소송, 지역사회 활동 확산  
+- **정책**: 모든 학교에 냉방 및 환기 시스템을 현대화하고, 기후 변화에 따른 청소년 건강 영향을 추적하는 세분화된 통계를 구축해야 합니다.
+- **교육**: 기후변화를 정규 교과목으로 편성하고, 문제 해결 중심의 프로젝트 기반 학습을 확대해야 합니다. 또한, '기후테크'와 같은 새로운 진로 분야에 대한 지도가 필요합니다.
+- **청소년 행동**: 플라스틱 저감 캠페인, 기후행동 소송 참여, 지역사회 환경 문제 해결 등 청소년이 주도하는 기후 행동을 적극적으로 지원하고 확산해야 합니다.
 """)
 
 # --- 결론 및 참고 자료 ---
@@ -271,20 +328,20 @@ st.markdown("""
 
 st.header("V. 참고 자료")
 st.markdown("""
+- Goodman, J., & Park, R. J. (2018). *Heat and Learning*. NBER Working Paper.
+- Hickman, C., et al. (2021). Climate anxiety in children and young people and their beliefs about government responses to climate change: a global survey. *The Lancet Planetary Health*.
 - 기상청 보도자료 (2024)  
 - 한국해양수산개발원 연구보고서  
-- 청소년 기후불안 국제 조사 (Lancet, 2021)  
 - Planet03 해양열파 연구 (2021)  
 - Newstree, YTN Science 외 기사 및 연구논문  
 """)
 
 st.markdown(
     """
-    <div style='text-align: center; padding: 20px; color: gray; font-size: 0.9em;'>
-        미림마이스터고등학교 1학년 4반 5조 · 지속가능한지구사랑해조
+    <hr style='border:1px solid #ccc; margin-top:30px; margin-bottom:10px;'/>
+    <div style='text-align: center; padding: 10px; color: gray; font-size: 0.9em;'>
+        미림마이스터고등학교 1학년 4반 1조 · 지속가능한지구사랑해조
     </div>
     """,
     unsafe_allow_html=True
 )
-
-
